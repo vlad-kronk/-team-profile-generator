@@ -7,10 +7,10 @@ class Intern extends Employee {
     }
 }
 
-Intern.prototype.getSchool() {
+Intern.prototype.getSchool = function() {
     return this.school;
 }
 
-Intern.prototype.getRole() {
+Intern.prototype.getRole = function() {
     return "Intern";
 }
