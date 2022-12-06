@@ -58,13 +58,6 @@ const internQuestion = [{
     message: "School: "
 }];
 
-// writes to the dist html file
-function writeToFile(fileName, data) {
-    fs.writeFile(`./dist/${fileName}.html`, data, (err) =>
-        err ? console.error(err) : console.log('Success!')
-    );
-}
-
 // create prompt module and initialize array for employee objects
 const prompt = inq.createPromptModule();
 let employees = [];
@@ -77,28 +70,49 @@ let getType = async () => {
 
 // concatenates array of base questions with the position-specific questions and returns the result
 // if the user chose to exit, save the HTML into ./dist/index.html and exit the app
-let appendQuestions = (type) => {
+let appendQuestions = async (type) => {
+
     let result;
+
     switch (type) {
+
         case "Manager":
             result = employeeBaseInfoQuestions.concat(managerQuestion);
             break;
+
         case "Engineer":
             result = employeeBaseInfoQuestions.concat(engineerQuestion);
             break;
+
         case "Intern":
             result = employeeBaseInfoQuestions.concat(internQuestion);
             break;
+
         case "Exit application":
+            // if the the employees array is NOT empty
             if (employees.length > 0) {
+                
                 console.log("Generating HTML...");
-                writeToFile("index", generateHTML(employees));
+                
+                // uses generateHTML module
+                const data = generateHTML(employees);
+                
+                // wait for fs to write the data to the dist html file, catch and log errors
+                try {
+                    await fs.promises.writeFile("./dist/index.html", data);
+                    console.log("Success!");
+                } catch (err) {
+                    console.error(err);
+                }
+
             } else {
                 console.log("No HTML generated.");
             }
+
             console.log("Exiting application...");
             process.exit(0);
     }
+
     // return the new questions array
     return result;
 }
@@ -124,7 +138,8 @@ let getEmployee = async () => {
     employee.type = employeeType;
 
     // asks the user the new employee info questions based on employee type
-    const employeeInfo = await getEmployeeInfo(appendQuestions(employeeType));
+    const questions = await appendQuestions(employeeType)
+    const employeeInfo = await getEmployeeInfo(questions);
 
     // set employee key/value pairs to user's responses
     employee["name"] = employeeInfo.name;
